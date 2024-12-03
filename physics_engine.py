@@ -16,7 +16,7 @@ class Physics_Engine:
         self.clock = pygame.time.Clock()
     
     def start(self):
-        self.generateStaticObstacle()
+        #self.generateStaticObstacle()
         running = True
         while running:
             self.clock.tick(fps)
@@ -29,7 +29,7 @@ class Physics_Engine:
                         print('game quit by user')
                         running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    square = Square(event.pos)
+                    square = Square(init_position=event.pos)
                     self.squares.append(square)
                     print('Square created at:', event.pos)
                 #throw functionality ?
@@ -37,9 +37,9 @@ class Physics_Engine:
             self.screen.fill((1, 1, 1))
             self.walls = self.draw_walls() #collision
 
-            
-            for square in self.squares:
-                square.draw(self.screen)
+            for obj in self.squares:
+                square.apply()
+                obj.draw(self.screen)
             
             pygame.display.flip()
 
@@ -48,8 +48,7 @@ class Physics_Engine:
 
     def generateStaticObstacle(self):
         """Generates a static obstacle in the middle of the screen"""
-        #square = Square((300, 50))
-        #self.squares.append(square)
+
         static_square = Square((self.windowWidth * 0.5, self.windowHeight * 0.5))
         static_square.width = 300
         static_square.height = 50
