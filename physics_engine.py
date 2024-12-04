@@ -1,7 +1,8 @@
-import pygame
-import sys
+import pygame, sys
 from Primitives.square2D import Square
 from mouse_trajectory import Mouse_Trajectory as mT
+from collision import Collision
+from static_obstacle import StaticObstacle as sO
 
 wall_thickness = 5
 fps = 60
@@ -19,6 +20,7 @@ class Physics_Engine:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, 25)
         self.mouse_trajectory = mT([])
+        self.sO = sO(self.screen, (self.windowWidth * 0.5, self.windowHeight * 0.5), 300, 50, (255, 255, 255))
     
     def draw_text(self, text, x, y):
         text_surface = self.font.render(text, True, (255, 255, 255))
@@ -44,8 +46,13 @@ class Physics_Engine:
                         print('Game quit by user')
                         running = False
                     elif event.key == pygame.K_a:  # Toggle square generation/instansiation
-                        print('Squares will now generate on mouse click')
-                        to_generate = not to_generate
+                            if to_generate == True:
+                                to_generate = False
+                                print('Square generation is now disabled')
+                            else:
+                                to_generate = True
+                                print('Square generation is now enabled')
+                            #to_generate = not to_generate
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if not to_generate:  # Do not generate squares
                         mouse_pos = event.pos
@@ -93,25 +100,19 @@ class Physics_Engine:
             self.screen.fill((1, 1, 1))
             self.draw_text("Press A to generate squares. Press A again to move the squares.", 10, 10)
             self.walls = self.draw_walls()
-
+            
             for square in self.squares:
                 square.apply(mouse_cPos)
                 square.draw(self.screen)
+
+            self.sO.draw()
+
+            self.check_collisions()
 
             pygame.display.flip()
 
         pygame.quit()
         sys.exit()
-
-
-    def generateStaticObstacle(self):
-        """Generates a static obstacle in the middle of the screen"""
-
-        static_square = Square((self.windowWidth * 0.5, self.windowHeight * 0.5))
-        static_square.width = 300
-        static_square.height = 50
-        static_square.color = (0, 0, 0)
-        self.squares.append(static_square)
 
     def draw_walls(self):
         left = pygame.draw.line(self.screen, 'white', (0, 0), (0, self.windowHeight), wall_thickness)
@@ -140,6 +141,14 @@ class Physics_Engine:
         elif square.init_position[1] + square.height > self.windowHeight:  # Bottom wall
             square.init_position[1] = self.windowHeight - square.height
             square.out_of_bounds = True
+
+    def check_collisions(self):
+        for i in range(len(self.squares)):
+            for j in range(i + 1, len(self.squares)):
+                square1 = self.squares[i]
+                square2 = self.squares[j]
+                if Collision.check_collision(square1, square2):
+                    Collision.resolve_collision(square1, square2)
         
 
 
