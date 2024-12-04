@@ -13,7 +13,8 @@ class Square:
         self.retention = 0.9        
         self.mass = 200
         self.selected = False
-        self.friction = 0.02
+        self.friction = 0.1
+        self.out_of_bounds = False
 
         if gravity is None:
             self.gravity = Gravity(self)
@@ -28,13 +29,18 @@ class Square:
     def setID(self, id):
         self.id = id
 
+    def setOutOfBounds(self, out_of_bounds):
+        self.out_of_bounds = out_of_bounds
+        self.draw(self.screen)
+        print('Square is out of bounds')
+
     def setSelected(self, selected):
         self.selected = selected
         if self.selected:
             print(self.id, ' has been selected')
 
-    def apply(self, mouse_pos, x_force, y_force):
-        self.gravity.check_gravity(x_force, y_force)
+    def apply(self, mouse_pos):
+        self.gravity.check_gravity()
         self.gravity.update_pos(mouse_pos)
         self.rect.x = self.init_position[0]
         self.rect.y = self.init_position[1]
@@ -45,6 +51,10 @@ class Square:
         if self.rect.collidepoint(px, py):
             print('Square', self.id, 'has been clicked')
         return self.rect.collidepoint(px, py)
+    
+    def reset_pos(self, windowWidth, windowHeight):
+        self.init_position[0] = windowWidth / 2
+        self.init_position[1] = windowHeight / 2
 
 class Gravity:
     gravity = 0.5
@@ -55,7 +65,7 @@ class Gravity:
         self.windowWidth = 800
         self.obj = obj
     
-    def check_gravity(self, x_force, y_force):
+    def check_gravity(self):
         """Check gravity and apply to object"""
         if not self.obj.selected:
             if self.obj.init_position[1] < self.windowHeight - self.obj.height - 5:
@@ -75,9 +85,7 @@ class Gravity:
             self.obj.x_velocity -= self.obj.friction
         elif self.obj.y_velocity == 0 and self.obj.x_velocity < 0:
             self.obj.x_velocity += self.obj.friction
-        else:
-            self.obj.x_velocity = x_force
-            self.obj.y_velocity = y_force
+
         return self.obj.y_velocity
     
     def update_pos(self, mouse_pos):
@@ -88,4 +96,6 @@ class Gravity:
         else:
            self.obj.init_position[0] = mouse_pos[0]
            self.obj.init_position[1] = mouse_pos[1]
+
+
         
