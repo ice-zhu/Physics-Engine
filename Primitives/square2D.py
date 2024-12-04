@@ -16,15 +16,18 @@ class Square:
         self.friction = 0.1
         self.out_of_bounds = False
 
-        if gravity is None:
+        if gravity is None: #Singleton
             self.gravity = Gravity(self)
         else:
             self.gravity = gravity
         
         self.rect = pygame.Rect(self.init_position[0], self.init_position[1], self.width, self.height)
+        self.old_rect = self.rect.copy()
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect)
+
+    
 
     def setID(self, id):
         self.id = id
@@ -66,13 +69,13 @@ class Gravity:
         self.windowHeight = 600
         self.windowWidth = 800
         self.obj = obj
+        self.bounce_stop = 0.5
     
     def check_gravity(self):
         """Check gravity and apply to object"""
         if not self.obj.selected:
             if self.obj.init_position[1] < self.windowHeight - self.obj.height - 5:
                 self.obj.y_velocity += Gravity.gravity
-
             else:
                 if abs(self.obj.y_velocity) > Gravity.bounce_stop:
                     self.obj.y_velocity = -self.obj.y_velocity * self.obj.retention
@@ -91,6 +94,8 @@ class Gravity:
         return self.obj.y_velocity
     
     def update_pos(self, mouse_pos):
+        self.obj.old_rect = self.obj.rect.copy() #previous frame
+
         """Update position based on velocity"""
         if not self.obj.selected:
             self.obj.init_position[1] += self.obj.y_velocity

@@ -77,18 +77,7 @@ class Physics_Engine:
                         dragging = False
                         if active_square.out_of_bounds:
                             print(f"Square {active_square.id} is out of bounds. Resetting position.")
-                            old_x_pos = active_square.init_position[0]
-                            old_y_pos = active_square.init_position[1]
-                            if old_x_pos < wall_thickness and old_y_pos > wall_thickness: #if out of x bound but within y bound
-                                active_square.init_position[0] = wall_thickness
-                            elif old_y_pos < wall_thickness and old_x_pos > wall_thickness: #if out of y bound but within x bound
-                                active_square.init_position[1] = wall_thickness
-                            elif old_x_pos and old_y_pos < wall_thickness: #if both
-                                active_square.init_position[0] = self.windowWidth / 2
-                                active_square.init_position[1] = self.windowHeight / 2
-                            
-                            print(f"Old position: ({old_x_pos}, {old_y_pos})")
-                            active_square.setOutOfBounds(False, self.screen)
+                            self.check_wall_collisions(active_square)
                     active_square = None
                     for square in self.squares:
                         square.setSelected(False)
@@ -149,6 +138,24 @@ class Physics_Engine:
                 square2 = self.squares[j]
                 if Collision.check_collision(square1, square2):
                     Collision.resolve_collision(square1, square2)
+
+    def check_wall_collisions(self, square):
+        old_x_pos = square.init_position[0] #modularize this
+        old_y_pos = square.init_position[1]
+
+        if old_x_pos < square.width or old_x_pos > self.windowWidth - square.width:  # Check if out of bounds on left or right
+            square.init_position[0] = wall_thickness  # Reset to left boundary
+        elif old_x_pos > self.windowWidth - square.width:  # For right boundary
+            square.init_position[0] = self.windowWidth*2 - 50  # Reset to the right boundary
+        elif (old_y_pos < square.height or old_y_pos > self.windowHeight + square.height): #if out of y bound but within x bound
+            square.init_position[1] = wall_thickness
+        elif old_x_pos and old_y_pos < 100: #check how to deal with edges
+            square.init_position[0] = self.windowWidth / 2
+            square.init_position[1] = self.windowHeight / 2
+        
+        print(f"Old position: ({old_x_pos}, {old_y_pos})")
+        square.setOutOfBounds(False, self.screen)
+        
         
 
 
