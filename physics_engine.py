@@ -14,13 +14,21 @@ class Physics_Engine:
         pygame.display.set_caption("Physics Engine")
         self.squares = []
         self.clock = pygame.time.Clock()
+        self.font = pygame.font.SysFont(None, 25)  # Initialize font
     
+    def draw_text(self, text, x, y):
+        text_surface = self.font.render(text, True, (255, 255, 255))
+        self.screen.blit(text_surface, (x, y))
+
     def start(self):
+        squareID = 0 #incremented each time a square is created
         #self.generateStaticObstacle()
+        to_generate = False #introduce a toggle function
         running = True
+
         while running:
             self.clock.tick(fps)
-            
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -28,18 +36,34 @@ class Physics_Engine:
                     if event.key == pygame.K_ESCAPE:
                         print('game quit by user')
                         running = False
+                    elif event.key == pygame.K_a: #toggle square generation¨
+                        print('A has been pressed, square will now generate on mouse click')
+                        if to_generate == False:
+                            to_generate = True
+                        else: 
+                            print('A has been pressed, squares will not generate on mouse click')
+                            to_generate = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    square = Square(init_position=event.pos)
-                    self.squares.append(square)
-                    print('Square created at:', event.pos)
-                #throw functionality ?
-
+                    if to_generate == False: #Do not generate squares
+                        mouse_pos = event.pos
+                        for square in self.squares:
+                            if square.contains_point(mouse_pos):
+                                print(f"Square with ID {square.id} was clicked at position {mouse_pos}")
+                    else: #OK to generate squares
+                        square = Square(init_position=event.pos)
+                        square.setID(squareID)
+                        squareID += 1
+                        self.squares.append(square)
+                        print('Square created at:', event.pos)
+                    #throw functionality ?
+                
             self.screen.fill((1, 1, 1))
+            self.draw_text("Press A to generate squares. Press A again to move the squares.", 10, 10)
             self.walls = self.draw_walls() #collision
 
-            for obj in self.squares:
+            for square in self.squares:
                 square.apply()
-                obj.draw(self.screen)
+                square.draw(self.screen)
             
             pygame.display.flip()
 
