@@ -17,7 +17,7 @@ class Physics_Engine:
         pygame.display.set_caption("Physics Engine")
         self.squares = []
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont(None, 25)  # Initialize font
+        self.font = pygame.font.SysFont(None, 25)
         self.mouse_trajectory = mT([])
     
     def draw_text(self, text, x, y):
@@ -25,79 +25,84 @@ class Physics_Engine:
         self.screen.blit(text_surface, (x, y))
 
     def start(self):
-        squareID = 0 #incremented each time a square is created
-        #self.generateStaticObstacle()
-        to_generate = False #introduce a toggle function
+        squareID = 0
+        to_generate = False
         running = True
         self.mouse_trajectory.add_mouse_position(pygame.mouse.get_pos())
+        active_square = None
+        dragging = False
 
         while running:
-            mouse_cPos = pygame.mouse.get_pos() #coordinates of the mouse's current position
+            mouse_cPos = pygame.mouse.get_pos()
             self.clock.tick(fps)
-            active_square = None
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        print('game quit by user')
+                        print('Game quit by user')
                         running = False
-                    elif event.key == pygame.K_a: #toggle square generation¨
+                    elif event.key == pygame.K_a:  # Toggle square generation/instansiation
                         print('Squares will now generate on mouse click')
-                        if to_generate == False:
-                            to_generate = True
-                        else: 
-                            print('Squares will not generate on mouse click [THROW ACTIVATED]')
-                            to_generate = False
+                        to_generate = not to_generate
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if to_generate == False: #Do not generate squares
+                    if not to_generate:  # Do not generate squares
                         mouse_pos = event.pos
                         for square in self.squares:
                             if square.contains_point(mouse_pos):
-                                active_square = square #square is clicked
+                                active_square = square  # Square is clicked
+                                dragging = True  # Start dragging the square
                                 print(f"Square {square.id} follows mouse at {mouse_cPos}")
-                                square.setSelected(True) #square is selected
-                                while active_square.out_of_bounds == False:
-                                    self.move_square_with_mouse(square, mouse_pos)
-                                    if active_square.out_of_bounds == True:
-                                        print('!!!!!!!!!!!!!Square is not out of bounds')
-                                        active_square.init_position[1] = 200
-                                        active_square.init_position[0] = 200
-                                        active_square.draw(self.screen)
-                                        square.apply(mouse_cPos)
-                                        square.draw(self.screen)
+                                square.setSelected(True)  # Square is selected
                             else:
-                                square.setSelected(False) #square is not selected
+                                square.setSelected(False)  # Square is not selected
                                 active_square = None
-                    else: #OK to generate squares
+                    else:  # OK to generate squares
                         square = Square(init_position=event.pos)
                         square.setID(squareID)
                         squareID += 1
                         self.squares.append(square)
-                        print('Square created at:', event.pos)             
-                elif event.type == pygame.MOUSEBUTTONUP: #when we release the selected mouse button
-                    if active_square is not None and active_square.out_of_bounds == True:
-                        print('Square is out of bounds')
-                        active_square.init_position[1] = 200
-                        active_square.init_position[0] = 200
-                        active_square.setOutOfBounds(False)
-                    active_square = None #no square is selected
+                        print('Square created at:', event.pos)
+
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    if active_square is not None and dragging:
+                        dragging = False
+                        if active_square.out_of_bounds:
+                            print(f"Square {active_square.id} is out of bounds. Resetting position.")
+                            old_x_pos = active_square.init_position[0]
+                            old_y_pos = active_square.init_position[1]
+                            if old_x_pos < wall_thickness and old_y_pos > wall_thickness: #if out of x bound but within y bound
+                                active_square.init_position[0] = wall_thickness
+                            elif old_y_pos < wall_thickness and old_x_pos > wall_thickness: #if out of y bound but within x bound
+                                active_square.init_position[1] = wall_thickness
+                            elif old_x_pos and old_y_pos < wall_thickness: #if both
+                                active_square.init_position[0] = self.windowWidth / 2
+                                active_square.init_position[1] = self.windowHeight / 2
+                            
+                            print(f"Old position: ({old_x_pos}, {old_y_pos})")
+                            active_square.setOutOfBounds(False, self.screen)
+                    active_square = None
                     for square in self.squares:
                         square.setSelected(False)
-                
+
+                if dragging and active_square is not None:
+                    print(f"Square {active_square.id} is being moved. Current mouse position: {mouse_cPos}")
+                    self.move_square_with_mouse(active_square, mouse_cPos)
+
             self.screen.fill((1, 1, 1))
             self.draw_text("Press A to generate squares. Press A again to move the squares.", 10, 10)
-            self.walls = self.draw_walls() #collision
+            self.walls = self.draw_walls()
 
             for square in self.squares:
                 square.apply(mouse_cPos)
                 square.draw(self.screen)
-            
+
             pygame.display.flip()
 
         pygame.quit()
         sys.exit()
+
 
     def generateStaticObstacle(self):
         """Generates a static obstacle in the middle of the screen"""
@@ -118,36 +123,23 @@ class Physics_Engine:
     
     def move_square_with_mouse(self, square, mouse_pos):
         """Move the square with the mouse, ensuring no collision with walls."""
-        # Center the square on the mouse position
         square.init_position[0] = mouse_pos[0] - square.width // 2
         square.init_position[1] = mouse_pos[1] - square.height // 2
 
-        # Prevent the square from going out of bounds and keep it at the wall when touching
         if square.init_position[0] < wall_thickness:  # Left wall
             square.init_position[0] = wall_thickness
-            
-            print('Square is out of bounds on the left wall')
             square.out_of_bounds = True
         elif square.init_position[0] + square.width > self.windowWidth - wall_thickness:  # Right wall
             square.init_position[0] = self.windowWidth - square.width - wall_thickness
-            print('Square is out of bounds on the right wall')
             square.out_of_bounds = True
-
 
         if square.init_position[1] < 0:  # Top wall
             square.init_position[1] = 0
-            print('Square is out of bounds on the top wall')
             square.out_of_bounds = True
-
 
         elif square.init_position[1] + square.height > self.windowHeight:  # Bottom wall
             square.init_position[1] = self.windowHeight - square.height
             square.out_of_bounds = True
-            print('Square is out of bounds on the bottom wall')
-
-        if square.out_of_bounds == True:
-            square.reset_pos(self.windowWidth, self.windowHeight)
-
         
 
 

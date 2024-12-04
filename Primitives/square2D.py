@@ -29,9 +29,11 @@ class Square:
     def setID(self, id):
         self.id = id
 
-    def setOutOfBounds(self, out_of_bounds):
+    def setOutOfBounds(self, out_of_bounds, screen):
         self.out_of_bounds = out_of_bounds
-        self.draw(self.screen)
+        if self.out_of_bounds:
+            print('Square', {self.id}, 'is out of bounds')
+        self.draw(screen)
         print('Square is out of bounds')
 
     def setSelected(self, selected):
