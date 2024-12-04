@@ -38,11 +38,11 @@ class Physics_Engine:
                         print('game quit by user')
                         running = False
                     elif event.key == pygame.K_a: #toggle square generation¨
-                        print('A has been pressed, square will now generate on mouse click')
+                        print('Squares will now generate on mouse click')
                         if to_generate == False:
                             to_generate = True
                         else: 
-                            print('A has been pressed, squares will not generate on mouse click')
+                            print('Squares will not generate on mouse click [THROW ACTIVATED]')
                             to_generate = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if to_generate == False: #Do not generate squares
