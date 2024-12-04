@@ -25,6 +25,7 @@ class Physics_Engine:
         #self.generateStaticObstacle()
         to_generate = False #introduce a toggle function
         running = True
+        active_square = False
 
         while running:
             self.clock.tick(fps)
@@ -48,14 +49,17 @@ class Physics_Engine:
                         mouse_pos = event.pos
                         for square in self.squares:
                             if square.contains_point(mouse_pos):
-                                print(f"Square with ID {square.id} was clicked at position {mouse_pos}")
+                                active_square = True #square is clicked
+                                square.setSelected(True) #square is selected
+                            else:
+                                square.setSelected(False) #square is not selected
                     else: #OK to generate squares
                         square = Square(init_position=event.pos)
                         square.setID(squareID)
                         squareID += 1
                         self.squares.append(square)
                         print('Square created at:', event.pos)
-                    #throw functionality ?
+                 
                 
             self.screen.fill((1, 1, 1))
             self.draw_text("Press A to generate squares. Press A again to move the squares.", 10, 10)

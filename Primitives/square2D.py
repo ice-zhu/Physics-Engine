@@ -14,17 +14,25 @@ class Square:
         self.x_velocity = 0
         self.retention = 0.9        
         self.mass = 200
+        self.selected = False
 
         if gravity is None:
             self.gravity = Gravity(self)
         else:
             self.gravity = gravity
+        
+        self.rect = pygame.Rect(self.init_position[0], self.init_position[1], self.width, self.height)
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, pygame.Rect(self.init_position[0], self.init_position[1], self.width, self.height))
+        pygame.draw.rect(screen, self.color, self.rect)
 
     def setID(self, id):
         self.id = id
+
+    def setSelected(self, selected):
+        self.selected = selected
+        if self.selected:
+            print(self.id, ' has been selected')
 
     def apply(self):
         self.gravity.check_gravity()
@@ -33,7 +41,7 @@ class Square:
     def contains_point(self, point):
         """Check if the point (x, y) is inside this square"""
         px, py = point
-        return self.init_position[0] <= px <= self.init_position[0] + self.width and self.init_position[1] <= py <= self.init_position[1] + self.height
+        return self.rect.collidepoint(px, py)
 
 class Gravity:
     gravity = 0.5
@@ -42,6 +50,7 @@ class Gravity:
     def __init__(self, obj) -> None:
         self.windowHeight = 600
         self.obj = obj
+        
     
     def check_gravity(self):
         """make the object extend gravity or that every object has the functionalities of gravity -- REWRITE"""
