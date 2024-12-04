@@ -28,6 +28,7 @@ class Physics_Engine:
         active_square = False
 
         while running:
+            mouse_cPos = pygame.mouse.get_pos() #coordinates of the mouse's current position
             self.clock.tick(fps)
 
             for event in pygame.event.get():
@@ -50,6 +51,7 @@ class Physics_Engine:
                         for square in self.squares:
                             if square.contains_point(mouse_pos):
                                 active_square = True #square is clicked
+                                print(f"Square {square.id} follows mouse at {mouse_cPos}")
                                 square.setSelected(True) #square is selected
                             else:
                                 square.setSelected(False) #square is not selected
@@ -59,6 +61,10 @@ class Physics_Engine:
                         squareID += 1
                         self.squares.append(square)
                         print('Square created at:', event.pos)
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    active_square = False #no square is selected
+                    for square in self.squares:
+                        square.setSelected(False)
                  
                 
             self.screen.fill((1, 1, 1))
@@ -66,7 +72,7 @@ class Physics_Engine:
             self.walls = self.draw_walls() #collision
 
             for square in self.squares:
-                square.apply()
+                square.apply(mouse_cPos)
                 square.draw(self.screen)
             
             pygame.display.flip()

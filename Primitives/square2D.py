@@ -32,14 +32,14 @@ class Square:
         if self.selected:
             print(self.id, ' has been selected')
 
-    def apply(self):
+    def apply(self, mouse_pos):
         self.gravity.check_gravity()
-        self.gravity.update_pos()
+        self.gravity.update_pos(mouse_pos)
         self.rect.x = self.init_position[0]
         self.rect.y = self.init_position[1]
 
     def contains_point(self, point):
-        """Check if the point (x, y) is inside this square"""
+        """Check if the mouse's position is inside this square"""
         px, py = point
         if self.rect.collidepoint(px, py):
             print('Square', self.id, 'has been clicked')
@@ -67,11 +67,12 @@ class Gravity:
         
         return self.obj.y_velocity
     
-    def update_pos(self, ):
+    def update_pos(self, mouse_pos):
         """Update position based on velocity"""
-        if not self.selected:
+        if not self.obj.selected:
             self.obj.init_position[1] += self.obj.y_velocity
             self.obj.init_position[0] += self.obj.x_velocity
-        #else:
-           # self.obj.init_position[0] = self.obj.init_position[1]
+        else:
+           self.obj.init_position[0] = mouse_pos[0]
+           self.obj.init_position[1] = mouse_pos[1]
         
