@@ -1,9 +1,11 @@
 import pygame
 import sys
 from Primitives.square2D import Square
+from mouse_trajectory import Mouse_Trajectory as mT
 
 wall_thickness = 5
 fps = 60
+mouse_trajectory = []
 
 class Physics_Engine:
     def __init__(self) -> None:
@@ -15,6 +17,7 @@ class Physics_Engine:
         self.squares = []
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, 25)  # Initialize font
+        self.mouse_trajectory = mT([])
     
     def draw_text(self, text, x, y):
         text_surface = self.font.render(text, True, (255, 255, 255))
@@ -26,6 +29,7 @@ class Physics_Engine:
         to_generate = False #introduce a toggle function
         running = True
         active_square = False
+        x_force, y_force = self.mouse_trajectory.add_mouse_position(pygame.mouse.get_pos(), fps)
 
         while running:
             mouse_cPos = pygame.mouse.get_pos() #coordinates of the mouse's current position
@@ -72,7 +76,7 @@ class Physics_Engine:
             self.walls = self.draw_walls() #collision
 
             for square in self.squares:
-                square.apply(mouse_cPos)
+                square.apply(mouse_cPos, x_force, y_force)
                 square.draw(self.screen)
             
             pygame.display.flip()

@@ -13,6 +13,7 @@ class Square:
         self.retention = 0.9        
         self.mass = 200
         self.selected = False
+        self.friction = 0.02
 
         if gravity is None:
             self.gravity = Gravity(self)
@@ -32,8 +33,8 @@ class Square:
         if self.selected:
             print(self.id, ' has been selected')
 
-    def apply(self, mouse_pos):
-        self.gravity.check_gravity()
+    def apply(self, mouse_pos, x_force, y_force):
+        self.gravity.check_gravity(x_force, y_force)
         self.gravity.update_pos(mouse_pos)
         self.rect.x = self.init_position[0]
         self.rect.y = self.init_position[1]
@@ -51,20 +52,32 @@ class Gravity:
 
     def __init__(self, obj) -> None:
         self.windowHeight = 600
+        self.windowWidth = 800
         self.obj = obj
     
-    def check_gravity(self):
+    def check_gravity(self, x_force, y_force):
         """Check gravity and apply to object"""
-        if self.obj.init_position[1] < self.windowHeight - self.obj.height - 5:
-            self.obj.y_velocity += Gravity.gravity
+        if not self.obj.selected:
+            if self.obj.init_position[1] < self.windowHeight - self.obj.height - 5:
+                self.obj.y_velocity += Gravity.gravity
 
-        else:
-            if abs(self.obj.y_velocity) > Gravity.bounce_stop:
-                self.obj.y_velocity = -self.obj.y_velocity * self.obj.retention
             else:
-                if abs(self.obj.y_velocity) <= Gravity.bounce_stop:
-                    self.obj.y_velocity = 0
-        
+                if abs(self.obj.y_velocity) > Gravity.bounce_stop:
+                    self.obj.y_velocity = -self.obj.y_velocity * self.obj.retention
+                else:
+                    if abs(self.obj.y_velocity) <= Gravity.bounce_stop:
+                        self.obj.y_velocity = 0
+        if (self.obj.init_position[0] < self.obj.height + (5/2) and self.obj.x_velocity < 0) or (self.obj.init_position[0] > self.windowWidth - self.obj.width - (5/2) and self.obj.x_velocity > 0):
+            self.obj.x_velocity *= -1 * self.retention
+            if abs(self.obj.x_velocity) < self.bounce_stop:
+                self.obj.x_velocity = 0
+        if self.obj.y_velocity == 0 and self.obj.x_velocity > 0:
+            self.obj.x_velocity -= self.obj.friction
+        elif self.obj.y_velocity == 0 and self.obj.x_velocity < 0:
+            self.obj.x_velocity += self.obj.friction
+        else:
+            self.obj.x_velocity = x_force
+            self.obj.y_velocity = y_force
         return self.obj.y_velocity
     
     def update_pos(self, mouse_pos):
