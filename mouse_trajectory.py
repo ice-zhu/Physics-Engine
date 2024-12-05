@@ -7,9 +7,9 @@ class Mouse_Trajectory:
 
     def check_mouse_trajectory(self, fps):
         if len(self.mouse_trajectory) > (fps/3):
-            #print('Mouse trajectory is:', self.mouse_trajectory)
             self.mouse_trajectory.pop(0)
-        x_force, y_force = self.calculate_motion_vector()
+        x_force, y_force = self.calculate_motion_vector() #check this
+        return x_force, y_force
 
     def calculate_motion_vector(self):
         x_force, y_force = 0, 0
@@ -24,3 +24,4 @@ class Mouse_Trajectory:
     def add_mouse_position(self, pos):
         """Add a new mouse position to the trajectory."""
         self.mouse_trajectory.append(pos)
+        self.check_mouse_trajectory(60)

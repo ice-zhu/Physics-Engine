@@ -1,28 +1,52 @@
 import random
 import pygame
+from Primitives.gravity import GravityForSquare as Gravity
+from Primitives.shape_type import ShapeType
+from Primitives.shape2D import Shape
 
-class Square:
-    def __init__(self, init_position, gravity=None):
-        #retention = slow down the bounce
-        self.width = random.uniform(30.0, 100.0)
-        self.height = random.uniform(30.0, 100.0)
-        self.color = (random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255))  # Random RGB color
-        self.init_position = list(init_position) #marks where the square was initially created
+class Square(Shape):
+    def __init__(self, init_position, enable_gravity, gravity=None):
+        self.type = self.shape = ShapeType.SQUARE
+        self.enable_gravity = enable_gravity
+        
+        self.init_position = list(init_position)  # Marks where the square was initially created
+        
+        if self.enable_gravity:
+            self.create_random_square(gravity)
+        else:
+            self.create_obstacle(gravity)
+
         self.y_velocity = 0
         self.x_velocity = 0
-        self.retention = 0.9        
-        self.mass = 200
         self.selected = False
         self.friction = 0.1
         self.out_of_bounds = False
+        print('Square created at:', self.init_position)
 
-        if gravity is None: #Singleton
+    def create_random_square(self, gravity):
+        """Create a random square if gravity is enabled."""
+        self.width = random.uniform(30.0, 100.0)
+        self.height = random.uniform(30.0, 100.0)
+        self.color = (random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255))  # Random RGB color
+
+        if gravity is None:  # Singleton
             self.gravity = Gravity(self)
-        else:
+            self.retention = 0.9
+            self.mass = 200
+        
+        self.rect = pygame.Rect(self.init_position[0], self.init_position[1], self.width, self.height)
+
+    def create_obstacle(self, gravity):
+        """Create a static obstacle if gravity is disabled."""
+        self.width = 300
+        self.height = 20
+        self.color = (255, 255, 255)
+        self.id = -1
+
+        if gravity is not None:
             self.gravity = gravity
         
         self.rect = pygame.Rect(self.init_position[0], self.init_position[1], self.width, self.height)
-        self.old_rect = self.rect.copy()
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect)
@@ -43,10 +67,11 @@ class Square:
             print(self.id, ' has been selected')
 
     def apply(self, mouse_pos):
-        self.gravity.check_gravity()
-        self.gravity.update_pos(mouse_pos)
-        self.rect.x = self.init_position[0]
-        self.rect.y = self.init_position[1]
+        if self.enable_gravity:
+            self.gravity.check_gravity()
+            self.gravity.update_pos(mouse_pos)
+            self.rect.x = self.init_position[0]
+            self.rect.y = self.init_position[1]
 
     def contains_point(self, point):
         """Check if the mouse's position is inside this square"""

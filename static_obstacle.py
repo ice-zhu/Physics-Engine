@@ -1,5 +1,7 @@
-import pygame, sys, time
+import pygame
+from Primitives.square2D import Square
 
+#errors with the hitbox, it doesnt align with the circles intersection although both the square and the obstacle itself produces the correct dimensions.
 class StaticObstacle:
     def __init__(self, screen, pos, width, height, color):
         self.x = pos[0]
@@ -10,14 +12,20 @@ class StaticObstacle:
         self.screen = screen
         self.rect = pygame.draw.rect(self.screen, self.color, (self.x, self.y, width, height))
         self.old_rect = self.rect.copy()
+        self.static_square = None
 
-    def generateStaticObstacle(self):
+    @staticmethod
+    def generateStaticObstacle(windowWidth, windowHeight):
         """Generates a static obstacle in the middle of the screen"""
-        static_square = Square((self.windowWidth * 0.5, self.windowHeight * 0.5))
-        static_square.width = 300
-        static_square.height = 50
-        static_square.color = (0, 0, 0)
-        self.squares.append(static_square)
+        position = (windowWidth * 0.5, windowHeight * 0.5)
+        print('Static obstacle generated at:', position)
+        static_square = Square(position, enable_gravity=False)
+        static_square.setID(1000)
+        return static_square
 
     def draw(self):
         self.rect = pygame.draw.rect(self.screen, self.color, (self.x, self.y, self.width, self.height))
+
+    def contains_point(self, point):
+        """Check if the point is inside the obstacle."""
+        return self.rect.collidepoint(point)

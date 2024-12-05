@@ -1,12 +1,14 @@
 import random
 import pygame
 from Primitives.gravity import GravityForCircle as Gravity
+from Primitives.shape_type import ShapeType
+from Primitives.shape2D import Shape
 
-class Circle:
-    def __init__(self, init_position, gravity=None):
-        #retention = slow down the bounce
+class Circle(Shape):
+    def __init__(self, init_position, gravity=None, ):
+        self.type = ShapeType.CIRCLE
         self.radius = random.uniform(30.0, 50.0)
-        self.color = (random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255))  # Random RGB color
+        self.color = (random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255))
         self.init_position = list(init_position) #marks where the circle was initially created
         self.y_velocity = 0
         self.x_velocity = 0
@@ -15,15 +17,13 @@ class Circle:
         self.selected = False
         self.friction = 0.1
         self.out_of_bounds = False
+        self.original_color = self.color
 
         if gravity is None: #Singleton
             self.gravity = Gravity(self)
         else:
             self.gravity = gravity
-        
         self.circle = pygame.Rect(self.init_position[0] - self.radius, self.init_position[1] - self.radius, 2 * self.radius, 2 * self.radius)
-
-        self.old_circle = self.circle.copy()
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, self.circle.center, self.radius)
@@ -40,8 +40,6 @@ class Circle:
 
     def setSelected(self, selected):
         self.selected = selected
-        if self.selected:
-            print(self.id, ' has been selected')
 
     def apply(self, mouse_pos):
         self.gravity.check_gravity(self)
@@ -53,7 +51,7 @@ class Circle:
         """Check if the mouse's position is inside this square"""
         px, py = point
         if self.circle.collidepoint(px, py):
-            print('Square', self.id, 'has been clicked')
+            print('Circle', self.id, 'has been clicked')
         return self.circle.collidepoint(px, py)
     
     def reset_pos(self, windowWidth, windowHeight):
