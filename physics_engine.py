@@ -3,7 +3,6 @@ from Primitives.circle2D import Circle
 from Primitives.square2D import Square
 from mouse_trajectory import Mouse_Trajectory as mT
 from collision import CollisionManager
-from static_obstacle import StaticObstacle as sO
 from Primitives.shape_type import ShapeType
 
 wall_thickness = 5
@@ -15,7 +14,7 @@ class Physics_Engine:
         pygame.init()
         self.windowWidth = 800
         self.windowHeight = 600
-        self.screen = pygame.display.set_mode((self.windowWidth, self.windowHeight))
+        self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Physics Engine")
         self.primitive_shapes = []
         self.clock = pygame.time.Clock()
@@ -35,9 +34,9 @@ class Physics_Engine:
         dragging = False
         isFloating = False
     
-        staticObstacle = Square(init_position=(self.windowWidth * 0.5, self.windowHeight * 0.5), enable_gravity=False)
+        staticObstacle = Square(init_position=(self.windowWidth * 0.5, self.windowHeight * 0.5), enable_gravity=False, is_walls=False) #if gravity is false, we know its a static obstacle
         self.primitive_shapes.append(staticObstacle)
-        print('Static obstacle created at:', staticObstacle.init_position)
+        self.draw_static_walls()
         
         while running:
             mouse_cPos = pygame.mouse.get_pos()
@@ -57,15 +56,6 @@ class Physics_Engine:
                             else:
                                 to_generate = True
                                 print('circle generation is now enabled')
-                    elif event.key == pygame.K_b:  # Toggle floating mode when B is pressed
-                        for obj in self.primitive_shapes:
-                            if obj is not None and obj.type == ShapeType.CIRCLE:
-                                print('Floating mode toggled')
-                                if obj.gravity.floating_mode != isFloating:
-                                    obj.gravity.floating_mode = isFloating
-                                obj.gravity.toggle_floating(isFloating)
-                        isFloating = not isFloating
-                                
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if not to_generate:  # Do not generate shapes
                         mouse_pos = event.pos
@@ -103,7 +93,7 @@ class Physics_Engine:
 
             self.screen.fill((1, 1, 1))
             self.draw_text("Press A to generate shapes. Press A again to move the shapes.", 10, 10)
-            self.walls = self.draw_walls()
+            
             self.iterate_through_list(self.primitive_shapes, mouse_cPos)
             self.check_collisions()
 
@@ -121,12 +111,25 @@ class Physics_Engine:
                     else:
                         obj.init_position[0] = self.windowHeight * 0.5
 
-    def draw_walls(self):
-        left = pygame.draw.line(self.screen, 'white', (0, 0), (0, self.windowHeight), wall_thickness)
-        right = pygame.draw.line(self.screen, 'white', (self.windowWidth, 0), (self.windowWidth, self.windowHeight), wall_thickness)
-        top = pygame.draw.line(self.screen, 'white', (0, 0), (self.windowWidth, 0), wall_thickness)
-        bottom = pygame.draw.line(self.screen, 'white', (0, self.windowHeight), (self.windowWidth, self.windowHeight), wall_thickness)
+    
+    def draw_static_walls(self):
+        left = Square(init_position=(0, self.windowHeight), enable_gravity=False, is_walls=True).setID(self.shapeID)
+        self.shapeID += 1
+
+        right = Square(init_position=(self.windowWidth - wall_thickness, 0), enable_gravity=False, is_walls=True).setID(self.shapeID)
+        self.shapeID += 1
+
+        top = Square(init_position=(0, 0), enable_gravity=False, is_walls=True).setID(self.shapeID)
+        self.shapeID += 1
+        
+        bottom = Square(init_position=(0, self.windowHeight - wall_thickness), enable_gravity=False, is_walls=True).setID(self.shapeID)
+        self.shapeID += 1
         wall_list = [left, right, top, bottom]
+
+        for wall in wall_list:
+            if wall is not None:
+                self.primitive_shapes.append(wall)
+        
         return wall_list
     
     def move_shape_with_mouse(self, shape, mouse_pos):
@@ -157,8 +160,8 @@ class Physics_Engine:
             shape.out_of_bounds = True
 
         if shape.out_of_bounds: # redundant see a way to fix this as similar methods are doing the same thing already.
-            shape.out_of_bounds = False  # Reset collision state
-            if hasattr(shape, 'radius'):  # For circle shapes
+            shape.out_of_bounds = False 
+            if hasattr(shape, 'radius'):
                 if shape.init_position[0] < shape.radius:
                     shape.init_position[0] = shape.radius
                 elif shape.init_position[0] > self.windowWidth - shape.radius:

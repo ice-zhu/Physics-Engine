@@ -11,17 +11,14 @@ class CollisionManager:
             if obj1.type == ShapeType.CIRCLE and obj2.type == ShapeType.CIRCLE:
                 if CollisionForCircle.check_collision(obj1, obj2):
                     CollisionForCircle.resolve_collision(obj1, obj2)
-            elif obj1.type == ShapeType.SQUARE and obj2.type == ShapeType.SQUARE:
-                if CollisionForSquare.check_collision(obj1, obj2):
-                    CollisionForSquare.resolve_collision(obj1, obj2)
+            elif obj2.type == ShapeType.CIRCLE and obj1.type == ShapeType.CIRCLE:
+                if CollisionForCircle.check_collision(obj2, obj1):
+                    CollisionForCircle.resolve_collision(obj2, obj1)
             elif obj1.type == ShapeType.CIRCLE and obj2.type == ShapeType.SQUARE:
-        
                 if MixedCollision.check_circle_square_collision(obj1, obj2):
-                    
                     MixedCollision.resolve_circle_square_collision(obj1, obj2)
             elif obj1.type == ShapeType.SQUARE and obj2.type == ShapeType.CIRCLE:
                 if MixedCollision.check_circle_square_collision(obj2, obj1):
-                    print("Collision between square + circle")
                     MixedCollision.resolve_circle_square_collision(obj2, obj1)
 
 
@@ -83,16 +80,22 @@ class CollisionForCircle:
     @staticmethod
     def check_collision(circle1, circle2):
         """Check if two circles are colliding."""
-        dx = circle1.init_position[0] - circle2.init_position[0]
-        dy = circle1.init_position[1] - circle2.init_position[1]
-        distance = math.sqrt(dx ** 2 + dy ** 2 + 5)
+        dx1 = circle1.init_position[0] - circle2.init_position[0]
+        dy1 = circle1.init_position[1] - circle2.init_position[1]
+        distance1 = math.sqrt(dx1 ** 2 + dy1 ** 2)
 
-        if distance <= (circle1.radius + circle2.radius): #polish this algorithm assumes that circle 1 is bigger when some circles are smaller
+        dx2 = circle2.init_position[0] - circle1.init_position[0]
+        dy2 = circle2.init_position[1] - circle1.init_position[1]
+        distance2 = math.sqrt(dx2 ** 2 + dy2 ** 2)
+
+        print(distance1, " between ", circle1.id, " and ", circle2.id)
+        if distance1 <= (circle1.radius + circle2.radius) or distance2 <= (circle1.radius + circle2.radius): #polish this algorithm assumes that circle 1 is bigger when some circles are smaller
             if circle1.color != (255, 0, 0):
                 circle1.color = (255, 0, 0)
             if circle2.color != (255, 0, 0):
                 circle2.color = (255, 0, 0)
-            return True
+            print("Collision between circle ", circle1.id, " and circle ", circle2.id)
+            return True  
         else:
             if circle1.color == (255, 0, 0): 
                 circle1.color = circle1.original_color
@@ -146,31 +149,56 @@ class CollisionForCircle:
                     circle2.y_velocity = 0
 
 
-class MixedCollision:
+import math
+
+class MixedCollision: 
     @staticmethod
     def check_circle_square_collision(circle, square):
         """Check collision between a circle and a square."""
-        cx, cy = circle.init_position
+        cx = circle.init_position[0]
+        cy = circle.init_position[1]
         radius = circle.radius
 
-        left = square.rect.left
-        right = square.rect.right
-        top = square.rect.top
-        bottom = square.rect.bottom
+        left = square.rect.left - circle.radius
+        right = square.rect.right - circle.radius
+        top = square.rect.top-circle.radius
+        bottom = square.rect.bottom - circle.radius
 
         nearest_x = max(left, min(cx, right))
-        nearest_y = max(top, min(cy, bottom))
+        nearest_y = max(top, min(cy, bottom)) 
 
         dx = cx - nearest_x
         dy = cy - nearest_y
         distance = math.sqrt(dx**2 + dy**2)
-        return distance < radius
+
+        if distance <= radius:
+            MixedCollision.change_color_of_object(circle, square, True)
+        else:
+            MixedCollision.change_color_of_object(circle, square, False)
+
+        return distance <= radius
+
+
+    @staticmethod
+    def change_color_of_object(circle, square, is_colliding):
+        """Change the color of the object when they collide."""
+        if is_colliding:
+            if circle.color != (255, 0, 0):
+                circle.color = (255, 0, 0)
+            if square.color != (255, 0, 0):
+                square.color = (255, 0, 0)
+        else:
+            if circle.color == (255, 0, 0): 
+                circle.color = circle.original_color
+            if square.color == (255, 0, 0): 
+                square.color = square.original_color
     
 
     @staticmethod
     def resolve_circle_square_collision(circle, square):
-        nearest_x = max(square.rect.left, min(circle.init_position[0], square.rect.right))
-        nearest_y = max(square.rect.top, min(circle.init_position[1], square.rect.bottom))
+        radius = circle.radius
+        nearest_x = max(square.rect.left - radius, min(circle.init_position[0], square.rect.right-radius))
+        nearest_y = max(square.rect.top - radius, min(circle.init_position[1], square.rect.bottom - radius))
 
         dx = circle.init_position[0] - nearest_x
         dy = circle.init_position[1] - nearest_y
@@ -194,3 +222,45 @@ class MixedCollision:
         if abs(circle.init_position[1] + circle.radius - square.rect.top) < EPSILON and circle.y_velocity > 0:
             circle.y_velocity = 0
             circle.init_position[1] = square.rect.top - circle.radius
+
+    @staticmethod
+    def resolve_square_circle_collision(circle, square):
+        radius = circle.radius
+        closeX = circle.init_position[0]
+        closeY = circle.init_position[1]
+
+        if (circle.init_position[0] > square.rect.left):
+            closeX = square.rect.left
+        elif (circle.init_position[0] < square.rect.right):
+            closeX = square.rect.right
+        
+        if (circle.init_position[1] > square.rect.top):
+            closeY = square.rect.top
+        elif (circle.init_position[1] < square.rect.bottom):
+            closeY = square.rect.bottom
+
+        dx = closeX - circle.init_position[0]
+        dy = closeY - circle.init_position[1]
+
+        distance = math.sqrt((dx * dx) + (dy * dy))
+        overlap = circle.radius - distance
+
+        if distance <= radius:
+
+            nx = dx / distance if distance > EPSILON else 0
+            ny = dy / distance if distance > EPSILON else 0
+
+            circle.init_position[0] += nx * overlap
+            circle.init_position[1] += ny * overlap
+
+            dot_product = circle.x_velocity * nx + circle.y_velocity * ny
+            circle.x_velocity -= 2 * dot_product * nx
+            circle.y_velocity -= 2 * dot_product * ny
+
+            circle.x_velocity *= circle.retention
+            circle.y_velocity *= circle.retention
+
+        if abs(circle.init_position[1] + circle.radius - square.rect.top) < EPSILON and circle.y_velocity > 0:
+            circle.y_velocity = 0
+            circle.init_position[1] = square.rect.top - circle.radius
+

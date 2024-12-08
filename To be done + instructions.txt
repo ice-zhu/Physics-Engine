@@ -41,8 +41,4 @@ B. Collision Detection: GJK collision detection, SAT, OBB, Moving Objects, Conca
 volume hierarchy, Convex Hull Algorithm, Optimization, …
 Programming
 Department of Software Convergence, Kyung Hee University Teaching
-Assistant: Jinyoung Lee; Email: coolget159@khu.ac.kr Professor: Seungjae
-Oh; Email: oreo329@khu.ac.kr
-2024 Fall Semester SWCON211 Introduction to Game
-Verlet, …
 H. Deformable Body

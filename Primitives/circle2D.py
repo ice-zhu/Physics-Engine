@@ -5,17 +5,17 @@ from Primitives.shape_type import ShapeType
 from Primitives.shape2D import Shape
 
 class Circle(Shape):
-    def __init__(self, init_position, gravity=None, ):
+    def __init__(self, init_position, gravity=None):
         self.type = ShapeType.CIRCLE
         self.radius = random.uniform(30.0, 50.0)
         self.color = (random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255))
-        self.init_position = list(init_position) #marks where the circle was initially created
+        self.init_position = list(init_position)
         self.y_velocity = 0
         self.x_velocity = 0
-        self.retention = 0.9        
-        self.mass = 200
+        self.retention = random.uniform(0.5, 0.9)        
+        self.mass = random.uniform(100, 300)
         self.selected = False
-        self.friction = 0.1
+        self.friction = 0.3
         self.out_of_bounds = False
         self.original_color = self.color
 
