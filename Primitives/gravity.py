@@ -9,9 +9,10 @@ class GravityForSquare:
         self.obj = obj
         self.bounce_stop = 0.5
 
-    def check_gravity(self):
+    def check_gravity(self): 
         """Check gravity and apply to object."""
         if not self.obj.selected:
+            # Apply gravity
             if self.obj.init_position[1] < windowHeight - self.obj.height - 5:
                 self.obj.y_velocity += gravity
             else:
@@ -19,21 +20,28 @@ class GravityForSquare:
                     self.obj.y_velocity = -self.obj.y_velocity * self.obj.retention
                 else:
                     if abs(self.obj.y_velocity) <= bounce_stop:
-                            self.obj.y_velocity = 0
-        
-        if (self.obj.init_position[0] + self.obj.radius < self.obj.height and self.obj.x_velocity < 0) or (self.obj.init_position[0] + self.obj.radius > windowWidth and self.obj.x_velocity > 0):
-            self.obj.x_velocity *= -1 * self.retention
-            if abs(self.obj.x_velocity) < self.bounce_stop:
+                        self.obj.y_velocity = 0
+
+        # Check for collisions with left and right walls
+        if self.obj.init_position[0] < self.obj.radius + 5 and self.obj.x_velocity < 0:  # Left wall
+            self.obj.init_position[0] = self.obj.radius + 5
+            self.obj.x_velocity *= -1 * self.obj.retention
+        elif self.obj.init_position[0] > windowWidth - self.obj.radius - 5 and self.obj.x_velocity > 0:  # Right wall
+            self.obj.init_position[0] = windowWidth - self.obj.radius - 5
+            self.obj.x_velocity *= -1 * self.obj.retention
+
+        if self.obj.y_velocity == 0:
+            if abs(self.obj.x_velocity) > 0.20: 
+                self.obj.x_velocity *= (1 - self.obj.friction)
+            else:
                 self.obj.x_velocity = 0
- 
-        if self.obj.y_velocity == 0 and self.obj.x_velocity > 0:
-            self.obj.x_velocity -= self.obj.friction
-        elif self.obj.y_velocity == 0 and self.obj.x_velocity < 0:
-            self.obj.x_velocity += self.obj.friction
-        elif self.obj.y_velocity == 0 and self.obj.x_velocity == 0:
-            self.obj.x_velocity = 0
+
+        if self.obj.y_velocity == 0 and self.obj.x_velocity == 0:
+            print(f"Ball {self.obj.id} is at rest.")
+            print(f"Position: {self.obj.init_position}, Velocity: {self.obj.x_velocity}, {self.obj.y_velocity}")
 
         return self.obj.y_velocity
+
     
     def update_pos(self, mouse_pos):
         """Update position based on velocity"""
@@ -49,12 +57,12 @@ class GravityForSquare:
 class GravityForCircle:
     def __init__(self, obj) -> None:
         self.obj = obj
-        self.floating_mode = False # objects will fall automatically upon initialization
+        self.floating_mode = False
  
     def check_gravity(self, obj):
         """Check gravity and apply to object."""
         if not obj.selected:
-                if obj.init_position[1] + obj.radius <= windowHeight - obj.radius - 10:
+                if obj.init_position[1] + obj.radius <= windowHeight - obj.radius - 5:
                     obj.y_velocity += gravity
                 else:
                     if abs(obj.y_velocity) > bounce_stop:
@@ -63,25 +71,34 @@ class GravityForCircle:
                         if abs(obj.y_velocity) <= bounce_stop:
                             obj.y_velocity = 0
 
-        #Collision with left and right walls (X-axis)
-        if (obj.init_position[0] < obj.radius + 10 and obj.x_velocity < 0) or \
-           (obj.init_position[0] > windowWidth - obj.radius - 10 and obj.x_velocity > 0):
+        # Collision with left and right walls (X-axis)
+        if (obj.init_position[0] + obj.radius < obj.radius + 10 and obj.x_velocity < 0) or \
+           (obj.init_position[0] + obj.radius > windowWidth - obj.radius - 10 and obj.x_velocity > 0):
             obj.x_velocity *= -1 * obj.retention
             if abs(obj.x_velocity) < bounce_stop:
                 obj.x_velocity = 0
 
-        #Collision with top wall (Y-axis)**
+        # Collision with top wall (Y-axis)**
         if obj.init_position[1] - obj.radius < 0 - obj.radius:
             obj.y_velocity *= -1 * obj.retention
-            obj.init_position[1] = obj.radius #correct this
-            print(obj.init_position[1], " is here !!!!") #remove when fixed
+            obj.init_position[1] = obj.radius
             if abs(obj.y_velocity) < bounce_stop:
                 obj.y_velocity = 0
 
         if obj.y_velocity == 0 and obj.x_velocity > 0:
-            obj.x_velocity -= obj.friction
+            obj.x_velocity -= obj.friction * 2
+            #print(f"Circle {obj.id} velocity: ", obj.x_velocity)
         elif obj.y_velocity == 0 and obj.x_velocity < 0:
             obj.x_velocity += obj.friction
+            #print(f"!!!! Circle {obj.id} velocity: ", obj.x_velocity)
+        
+        if obj.x_velocity < -1 * (obj.friction * 100):
+            obj.init_position[0] = 100
+            obj.init_position[1] = 100
+
+        if obj.init_position[1] + obj.radius < 0 +  obj.radius:
+            print("Sinking")
+            obj.init_position[1] = 0
 
         return obj.y_velocity
     
