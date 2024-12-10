@@ -34,9 +34,9 @@ class Circle(Shape):
     def setOutOfBounds(self, out_of_bounds, screen):
         self.out_of_bounds = out_of_bounds
         if self.out_of_bounds:
-            print('Square', {self.id}, 'is out of bounds')
+            print('Circle', {self.id}, 'is out of bounds')
         self.draw(screen)
-        print('Square is out of bounds')
+        print('Circle is out of bounds')
 
     def setSelected(self, selected):
         self.selected = selected

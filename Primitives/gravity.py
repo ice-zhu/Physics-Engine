@@ -12,19 +12,16 @@ class GravityForSquare:
     def check_gravity(self):
         """Check gravity and apply to object."""
         if not self.obj.selected:
-            if self.floating_mode:
-                self.obj.y_velocity = -0.1
+            if self.obj.init_position[1] < windowHeight - self.obj.height - 5:
+                self.obj.y_velocity += gravity
             else:
-                if self.obj.init_position[1] < windowHeight - self.obj.height - 5:
-                    self.obj.y_velocity += gravity
+                if abs(self.obj.y_velocity) > bounce_stop:
+                    self.obj.y_velocity = -self.obj.y_velocity * self.obj.retention
                 else:
-                    if abs(self.obj.y_velocity) > bounce_stop:
-                        self.obj.y_velocity = -self.obj.y_velocity * self.obj.retention
-                    else:
-                        if abs(self.obj.y_velocity) <= bounce_stop:
+                    if abs(self.obj.y_velocity) <= bounce_stop:
                             self.obj.y_velocity = 0
         
-        if (self.obj.init_position[0] < self.obj.height + (5/2) and self.obj.x_velocity < 0) or (self.obj.init_position[0] > windowWidth - self.obj.width - (5/2) and self.obj.x_velocity > 0):
+        if (self.obj.init_position[0] + self.obj.radius < self.obj.height and self.obj.x_velocity < 0) or (self.obj.init_position[0] + self.obj.radius > windowWidth and self.obj.x_velocity > 0):
             self.obj.x_velocity *= -1 * self.retention
             if abs(self.obj.x_velocity) < self.bounce_stop:
                 self.obj.x_velocity = 0
@@ -93,7 +90,7 @@ class GravityForCircle:
         if not obj.selected:
             obj.init_position[1] += obj.y_velocity
             obj.init_position[0] += obj.x_velocity
-        else: #introduce the radius variable to move it a bit
+        else:
            obj.init_position[0] = mouse_pos[0]
            obj.init_position[1] = mouse_pos[1]
 
