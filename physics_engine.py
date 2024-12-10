@@ -128,7 +128,10 @@ class Physics_Engine:
                 shape1 = self.primitive_shapes[i]
                 shape2 = self.primitive_shapes[j]
                 if CollisionManager.handle_collision(shape1, shape2):
-                    CollisionManager.resolve_collision(shape1, shape2)
+                    self.collided_shapes.append(shape1)
+                    self.collided_shapes.append(shape2)
+                    
+        CollisionManager.handle_collision(self.collided_shapes) # Go through a list of collided shapes and handle them
 
     def reset_shape_position (self, shape, new_pos_x, new_pos_y): # In case of release of selection,
         shape.init_position[0] = new_pos_x

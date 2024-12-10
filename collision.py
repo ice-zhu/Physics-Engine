@@ -6,6 +6,21 @@ from Primitives.shape_type import ShapeType
 
 class CollisionManager:
     @staticmethod
+    def check_collision(obj1, obj2):
+        if obj1 is not None and obj2 is not None:
+            if obj1.type == ShapeType.CIRCLE and obj2.type == ShapeType.CIRCLE:
+                return CollisionForCircle.check_collision(obj1, obj2)
+            elif obj2.type == ShapeType.CIRCLE and obj1.type == ShapeType.CIRCLE:
+                return CollisionForCircle.check_collision(obj2, obj1)
+            elif obj1.type == ShapeType.CIRCLE and obj2.type == ShapeType.SQUARE:
+                return MixedCollision.check_circle_square_collision(obj1, obj2)
+            elif obj1.type == ShapeType.SQUARE and obj2.type == ShapeType.CIRCLE:
+                return MixedCollision.check_circle_square_collision(obj2, obj1)
+    @staticmethod    
+    def correct_collision(obj1, obj2):
+        
+
+    @staticmethod
     def handle_collision(obj1, obj2):
         if obj1 is not None and obj2 is not None:
             if obj1.type == ShapeType.CIRCLE and obj2.type == ShapeType.CIRCLE:
