@@ -1,10 +1,10 @@
 # Physics-Engine
  This physics engine project was created for class SWCON211.
 
- # Framework
+ ## Framework
     This physics engine was developed using the framework pygame only.
 
-# Commands to keep in mind of
+## Commands to keep in mind of
 * Press A to switch between selecting a circle vs generating a circle.
 * Press ESC to reset all the circles you have generated.
 * Press the X on top of the window to exit the game.
@@ -18,6 +18,6 @@
 A pyinstaller will be included though one can run the project by following these steps:
 1. Clone the project.
 2. Install the pygame framework.
-    pip install pygame
+    ´´´pip install pygame´´´
 3. Run the application.
-    python main.py
+    ´´´python main.py´´´
