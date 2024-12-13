@@ -18,6 +18,8 @@
 A pyinstaller will be included though one can run the project by following these steps:
 1. Clone the project.
 2. Install the pygame framework.
-    ´´´pip install pygame´´´
+    ```bash
+    pip install pygame```
 3. Run the application.
-    ´´´python main.py´´´
+    ```bash
+    python main.py```
