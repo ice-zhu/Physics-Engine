@@ -21,10 +21,12 @@ class Physics_Engine:
         
         
     def draw_text(self, text, x, y):
+        '''Draws text on the screen.'''
         text_surface = self.font.render(text, True, (255, 255, 255))
         self.screen.blit(text_surface, (x, y))
 
     def start(self):
+        '''Starts the physics engine.'''
         self.collided_with_selected_object = [] #keep track of objects who collided with the active object
         self.shapeID = 0
         to_generate = False
@@ -79,9 +81,8 @@ class Physics_Engine:
                         if circle is not None:
                             circle.setSelected(False)
 
-            if dragging and active_object is not None: # used for debugging
-                pass
-                #print(f"circle {active_object.id} is being moved. Current mouse position: {mouse_cPos}")
+            if dragging and active_object is not None: # Used for debugging
+                print(f"circle {active_object.id} is being moved. Current mouse position: {mouse_cPos}")
 
             self.screen.fill((1, 1, 1))  # Clear screen
             self.draw_text("Press A to generate shapes. Press A again to move the shapes.", 10, 10)
@@ -96,15 +97,17 @@ class Physics_Engine:
 
 
     def iterate_through_list(self, primitive_shapes, mouse_cPos):
+        '''Iterates through the list of shapes to draw the objects and update their positions continously.'''
         for obj in primitive_shapes:
                 if obj is not None:
                     if obj.type == ShapeType.CIRCLE:
                             obj.apply(mouse_cPos)
                             obj.draw(self.screen)
                     else:
-                        obj.draw(self.screen)
+                        obj.draw(self.screen) # Manages squares
 
     def draw_walls(self):
+        '''Draws the walls of the screen though visually.'''
         left = pygame.draw.line(self.screen, 'white', (0, 0), (0, self.windowHeight), wall_thickness)
         right = pygame.draw.line(self.screen, 'white', (self.windowWidth, 0), (self.windowWidth, self.windowHeight), wall_thickness)
         top = pygame.draw.line(self.screen, 'white', (0, 0), (self.windowWidth, 0), wall_thickness)
@@ -113,6 +116,7 @@ class Physics_Engine:
         return wall_list
     
     def draw_static_walls(self):
+        '''Draws the walls of the screen by creating objects of squares.'''
         left = Square(init_position=(0, self.windowHeight), enable_gravity=False, is_walls=True).setID(self.shapeID)
         self.shapeID += 1
 
@@ -132,6 +136,7 @@ class Physics_Engine:
         return wall_list
 
     def check_collisions(self):
+        '''Checks for collisions between shapes'''
         for i in range(len(self.primitive_shapes)):
             for j in range(i + 1, len(self.primitive_shapes)):
                 shape1 = self.primitive_shapes[i]
@@ -141,17 +146,18 @@ class Physics_Engine:
                     
 
     def reset_shape_position (self, shape, new_pos_x, new_pos_y): # In case of release of selection,
+        '''Resets the position of the shape to the center of the screen.'''
         shape.init_position[0] = new_pos_x
         shape.init_position[1] = new_pos_y
         shape.out_of_bounds = False
     
 
     def check_if_selected_shape_of_bounds(self, shape, mouse_pos):
+        '''Check if the selected shape is out of bounds.'''
         if hasattr(shape, 'radius'):
-            width = height = 2 * shape.radius
+            width = 2 * shape.radius
         else:
             width = shape.width
-            height = shape.height
 
         if mouse_pos[0] <= 0: # If beyond the horizontal walls
             shape.out_of_bounds = True
@@ -167,7 +173,7 @@ class Physics_Engine:
             print(f"circle {shape.id} went past the bottom wall.")
 
     def clear_all_shapes(self):
-        """Set shapes to None conditionally."""
+        """Set shapes to None conditionally to erase all shapes within the list."""
         for i, shape in enumerate(self.primitive_shapes):
             if shape is not None and shape.id != -1:
                 self.primitive_shapes[i] = None

@@ -15,7 +15,7 @@ class Circle(Shape):
         self.retention = random.uniform(0.5, 0.9)        
         self.mass = random.uniform(100, 300)
         self.selected = False
-        self.friction = 0.5
+        self.friction = 0.3
         self.out_of_bounds = False
         self.original_color = self.color
 
@@ -36,12 +36,12 @@ class Circle(Shape):
         if self.out_of_bounds:
             print('Circle', {self.id}, 'is out of bounds')
         self.draw(screen)
-        print('Circle is out of bounds')
 
     def setSelected(self, selected):
         self.selected = selected
 
     def apply(self, mouse_pos):
+        '''Apply gravity to the object and update its position.'''
         self.gravity.check_gravity(self)
         self.gravity.update_pos(self, mouse_pos)
         self.circle.x = self.init_position[0]

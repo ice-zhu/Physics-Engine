@@ -10,7 +10,7 @@ class GravityForSquare:
         self.bounce_stop = 0.5
 
     def check_gravity(self): 
-        """Check gravity and apply to object."""
+        """Checks gravity and apply to object."""
         if not self.obj.selected:
             # Apply gravity
             if self.obj.init_position[1] < windowHeight - self.obj.height - 5:
@@ -42,11 +42,8 @@ class GravityForSquare:
 
         return self.obj.y_velocity
 
-    
     def update_pos(self, mouse_pos):
-        """Update position based on velocity"""
-        self.obj.old_rect = self.obj.rect.copy()  # previous frame
-
+        """Updates position based on if the object is selected"""
         if not self.obj.selected:
             self.obj.init_position[1] += self.obj.y_velocity
             self.obj.init_position[0] += self.obj.x_velocity
@@ -54,15 +51,17 @@ class GravityForSquare:
            self.obj.init_position[0] = mouse_pos[0]
            self.obj.init_position[1] = mouse_pos[1]
 
+
 class GravityForCircle:
     def __init__(self, obj) -> None:
         self.obj = obj
         self.floating_mode = False
  
     def check_gravity(self, obj):
-        """Check gravity and apply to object."""
+        """Adjusts the velocity of the object with variables such as gravity, retention and bounce_stop.
+        It also handles situation where a circle bounces into any of the walls and adjusts the velocity in turn."""
         if not obj.selected:
-                if obj.init_position[1] + obj.radius <= windowHeight - obj.radius - 5:
+                if obj.init_position[1] + obj.radius <= windowHeight - obj.radius - 10:
                     obj.y_velocity += gravity
                 else:
                     if abs(obj.y_velocity) > bounce_stop:
@@ -85,25 +84,22 @@ class GravityForCircle:
             if abs(obj.y_velocity) < bounce_stop:
                 obj.y_velocity = 0
 
-        if obj.y_velocity == 0 and obj.x_velocity > 0:
-            obj.x_velocity -= obj.friction * 2
-            #print(f"Circle {obj.id} velocity: ", obj.x_velocity)
-        elif obj.y_velocity == 0 and obj.x_velocity < 0:
-            obj.x_velocity += obj.friction
-            #print(f"!!!! Circle {obj.id} velocity: ", obj.x_velocity)
-        
-        if obj.x_velocity < -1 * (obj.friction * 100):
-            obj.init_position[0] = 100
-            obj.init_position[1] = 100
+        if obj.y_velocity == 0:
+            if abs(obj.x_velocity) > obj.friction:
+                if obj.x_velocity > 0:
+                    obj.x_velocity -= obj.friction
+                elif obj.x_velocity < 0:
+                    obj.x_velocity += obj.friction 
+            else:
+                obj.x_velocity = 0
 
         if obj.init_position[1] + obj.radius < 0 +  obj.radius:
-            print("Sinking")
-            obj.init_position[1] = 0
+            obj.init_position[1] = 0 + obj.radius
 
         return obj.y_velocity
     
     def update_pos(self, obj, mouse_pos):
-        """Update position based on velocity."""
+        """Updates position based on if the object is selected"""
         if not obj.selected:
             obj.init_position[1] += obj.y_velocity
             obj.init_position[0] += obj.x_velocity

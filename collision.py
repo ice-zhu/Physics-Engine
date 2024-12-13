@@ -1,13 +1,14 @@
 import math
-EPSILON = 1e-6
-
-
 from Primitives.shape_type import ShapeType
+EPSILON = 1e-6
+windowWidth = 800
+windowHeight = 600
 
 class CollisionManager:
     
     @staticmethod
     def handle_collision(obj1, obj2):
+        '''Checks what kind of objects it has received in its parameters and then applies the relevant logic to the objects.'''
         if obj1 is not None and obj2 is not None:
             if obj1.type == ShapeType.CIRCLE and obj2.type == ShapeType.CIRCLE:
                 if CollisionForCircle.check_collision(obj1, obj2):
@@ -28,14 +29,14 @@ class CollisionForSquare:
 
     @staticmethod
     def check_collision(square1, square2):
-        """Check if two squares are colliding."""
+        """Checks if two squares are colliding."""
         if square1.rect.colliderect(square2.rect):
-            square1.color = (255, 0, 0)  # Change color when colliding, see if to update in realtime
+            square1.color = (255, 0, 0)  # Change color when colliding
         return square1.rect.colliderect(square2.rect)
 
     @staticmethod
     def resolve_collision(square1, square2):
-        """Resolve the collision between two squares."""
+        """Resolves the collision between two squares."""
         overlap_x = min(square1.rect.right, square2.rect.right) - max(square1.rect.left, square2.rect.left)
         overlap_y = min(square1.rect.bottom, square2.rect.bottom) - max(square1.rect.top, square2.rect.top)
 
@@ -78,11 +79,12 @@ class CollisionForSquare:
 class CollisionForCircle:
     @staticmethod
     def check_collision(circle1, circle2):
+        '''Checks if two circles are colliding by measuring the distance between them. If true, it will change the color of the circles.'''
         dx1 = circle1.init_position[0] - circle2.init_position[0]
         dy1 = circle1.init_position[1] - circle2.init_position[1]
         distance1 = math.sqrt(dx1 ** 2 + dy1 ** 2)
 
-        if distance1 < (circle1.radius + circle2.radius): #polish this algorithm assumes that circle 1 is bigger when some circles are smaller
+        if distance1 < (circle1.radius + circle2.radius): 
             if circle1.color != (255, 0, 0):
                 circle1.color = (255, 0, 0)
             if circle2.color != (255, 0, 0):
@@ -97,42 +99,45 @@ class CollisionForCircle:
 
     @staticmethod
     def resolve_collision(circle1, circle2):
-        """Resolve the collision between two circles."""
+        """Resolves the collision between two circles."""
         dx = circle1.init_position[0] - circle2.init_position[0]
         dy = circle1.init_position[1] - circle2.init_position[1]
         distance = math.sqrt(dx ** 2 + dy ** 2)
 
+        # Check if circles are colliding
         if distance <= (circle1.radius + circle2.radius):
             overlap = (circle1.radius + circle2.radius) - distance
 
-            nx = dx / distance
-            ny = dy / distance
-            if circle1.init_position[1] < circle2.init_position[0]:
-                circle2.init_position[0] += nx * overlap # remain the same
-                print(circle2.init_position[0], " current pos")
-            elif circle1.init_position[1] > circle2.init_position[0]:
-                circle2.init_position[0] -= nx * overlap
+            nx = dx / distance if distance > EPSILON else 0
+            ny = dy / distance if distance > EPSILON else 0
 
-            circle1.init_position[0] += nx * overlap / 2
-            circle1.init_position[1] += ny * overlap / 2
-            circle2.init_position[0] -= nx * overlap / 2
-            circle2.init_position[1] -= ny * overlap / 2
+            circle1.init_position[0] += nx * (overlap * 0.5)
+            circle1.init_position[1] += ny * (overlap * 0.5)
+            circle2.init_position[0] -= nx * (overlap * 0.5)
+            circle2.init_position[1] -= ny * (overlap * 0.5)
+
+            if circle1.init_position[1] + circle1.radius > windowHeight + 10:
+                circle1.init_position[1] = windowHeight - circle1.radius
+                circle1.y_velocity = 0 
+
+            if circle2.init_position[1] + circle2.radius > windowHeight + 10:
+                circle2.init_position[1] = windowHeight - circle2.radius
+                circle2.y_velocity = 0 
 
             if (circle2.init_position[0] + circle2.radius < circle2.radius + 10 and circle2.x_velocity < 0) or \
-                (circle2.init_position[0] + circle2.radius > 800 - circle2.radius - 10 and circle2.x_velocity > 0): # if touching the walls
-                circle2.init_position[0] = 100
-                circle2.init_position[1] = 100
-            
-            if (circle1.init_position[0] + circle1.radius < circle2.radius + 10 and circle1.x_velocity < 0) or \
-                (circle2.init_position[0] + circle1.radius > 800 - circle1.radius - 10 and circle1.x_velocity > 0): # if touching the walls
-                circle2.init_position[0] = 400
-                circle2.init_position[1] = 200
+            (circle2.init_position[0] + circle2.radius > windowWidth - circle2.radius - 10 and circle2.x_velocity > 0):
+                circle2.init_position[0] *= -1 * circle2.retention
+
+            if (circle1.init_position[0] + circle1.radius < circle1.radius + 10 and circle1.x_velocity < 0) or \
+            (circle1.init_position[0] + circle1.radius > windowWidth - circle1.radius - 10 and circle1.x_velocity > 0):
+                circle1.init_position[0] *= -1 * circle1.retention
 
             relative_velocity_x = circle1.x_velocity - circle2.x_velocity
             relative_velocity_y = circle1.y_velocity - circle2.y_velocity
 
             dot_product = relative_velocity_x * nx + relative_velocity_y * ny
 
+            # If the circles are moving towards each other, resolve the collision
             if dot_product < 0:
                 impulse = 2 * dot_product / (circle1.mass + circle2.mass)
 
@@ -146,17 +151,16 @@ class CollisionForCircle:
                 circle2.x_velocity *= circle2.retention
                 circle2.y_velocity *= circle2.retention
 
-                if abs(circle1.x_velocity) < circle1.friction:
+                if abs(circle1.x_velocity) <= circle1.friction:
                     circle1.x_velocity = 0
-                if abs(circle1.y_velocity) < circle1.friction:
+                if abs(circle1.y_velocity) <= circle1.friction:
                     circle1.y_velocity = 0
-                if abs(circle2.x_velocity) < circle2.friction:
+                if abs(circle2.x_velocity) <= circle2.friction:
                     circle2.x_velocity = 0
-                if abs(circle2.y_velocity) < circle2.friction:
+                if abs(circle2.y_velocity) <= circle2.friction:
                     circle2.y_velocity = 0
 
-
-import math
+        return circle1, circle2
 
 class MixedCollision: 
     @staticmethod

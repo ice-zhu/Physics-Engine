@@ -30,7 +30,7 @@ class Square(Shape):
         print('Square created at:', self.init_position)
 
     def create_random_square(self, gravity):
-        """Create a random square if gravity is enabled."""
+        """Creates a random square if gravity is enabled."""
         self.width = random.uniform(30.0, 100.0)
         self.height = random.uniform(30.0, 100.0)
         self.color = (random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255))  # Random RGB color
@@ -43,7 +43,7 @@ class Square(Shape):
         self.rect = pygame.Rect(self.init_position[0], self.init_position[1], self.width, self.height)
 
     def create_obstacle(self, gravity):
-        """Create a static obstacle if gravity is disabled."""
+        """Creates a static obstacle if gravity is disabled."""
         self.width = 200
         self.height = 5
         self.color = (255, 255, 255)
@@ -56,7 +56,7 @@ class Square(Shape):
         print('Obstacle created at:', self.init_position)
 
     def create_wall(self, gravity):
-        """Create a static obstacle if gravity is disabled."""
+        """Creates a static obstacle if gravity is disabled."""
         self.width = windowWidth
         self.height = windowHeight
         self.color = (255, 255, 255)
@@ -78,7 +78,6 @@ class Square(Shape):
         if self.out_of_bounds:
             print('Square', {self.id}, 'is out of bounds')
         self.draw(screen)
-        print('Square is out of bounds')
 
     def setSelected(self, selected):
         self.selected = selected
@@ -86,6 +85,7 @@ class Square(Shape):
             print(self.id, ' has been selected')
 
     def apply(self, mouse_pos):
+        '''Apply gravity to the object and update its position.'''
         if self.enable_gravity:
             self.gravity.check_gravity()
             self.gravity.update_pos(mouse_pos)
